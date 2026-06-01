@@ -1,0 +1,23 @@
+# Sphinx
+docs/_build/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local-only (not published)
+reverse_eng/*
+
+# Secrets
+.env
+.env.*
+**/exercise_catalog.json

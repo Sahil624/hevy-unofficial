@@ -1,0 +1,4 @@
+/* Minor tweaks for Furo on GitHub Pages */
+article p > code.literal {
+  font-size: 0.9em;
+}
