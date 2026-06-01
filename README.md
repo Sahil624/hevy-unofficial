@@ -27,11 +27,9 @@ See [packages/hevy/README.md](packages/hevy/README.md) for package details.
 
 ## Documentation
 
-Sphinx docs live in [`docs/`](docs/). After enabling [GitHub Pages](https://pages.github.com/) (source: **GitHub Actions**), they publish to:
+Read documentation at [https://isahil.me/hevy-unofficial/](https://isahil.me/hevy-unofficial/)
 
-`https://<your-github-user>.github.io/<repo-name>/`
-
-Build locally:
+## Build locally:
 
 ```bash
 pip install -e packages/hevy && pip install -r docs/requirements.txt

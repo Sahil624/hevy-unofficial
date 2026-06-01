@@ -27,8 +27,8 @@ On push to ``main``, after tests pass, the workflow ``.github/workflows/ci.yml``
 
 1. Installs the package and Sphinx dependencies
 2. Sets ``DOCS_BASE_URL`` to ``https://<owner>.github.io/<repo>/``
-3. Builds HTML to ``docs/_build/html``
-4. Deploys via `GitHub Pages <https://pages.github.com/>`_
+3. Builds HTML and uploads a single Pages artifact (``docs`` job)
+4. Deploys that artifact via `GitHub Pages <https://pages.github.com/>`_ (``pages`` job)
 
 Enable Pages in the repository settings:
 
