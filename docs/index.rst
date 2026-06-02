@@ -1,4 +1,4 @@
-hevy-unofficial
+Hevy Unofficial
 ===============
 
 Unofficial Python client for the `Hevy <https://hevy.com>`_ workout API
@@ -43,6 +43,7 @@ Features
 * Typed Python client built on ``httpx``
 * Automatic token refresh on expiry
 * Credential cache keyed by email
+* Browser login via Playwright (optional ``[core]`` install to skip)
 * Built-in exercise catalog extracted from hevy.com's web bundle
 * Routines, workouts, social feed, coach, and billing endpoints
 
