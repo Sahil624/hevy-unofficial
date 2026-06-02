@@ -9,12 +9,21 @@ Unofficial Python client for the [Hevy](https://hevy.com) workout API (`api.hevy
 
 ```bash
 pip install hevy-unofficial
+playwright install chromium
+```
+
+Without browser automation (lighter install):
+
+```bash
+pip install 'hevy-unofficial[core]'
 ```
 
 Development install from source:
 
 ```bash
 pip install -e "packages/hevy[dev]"
+# CI / headless dev without Playwright:
+pip install -e "packages/hevy[dev,core]"
 ```
 
 ## Quick start
@@ -41,6 +50,24 @@ Environment variables (optional):
 - `HEVY_API_KEY` — default `shelobs_hevy_web` (web client key)
 - `HEVY_PLATFORM` — default `web`
 
+### Browser login
+
+Opens hevy.com and reads the `auth2.0-token` cookie (login if needed):
+
+```python
+from hevy_unofficial import CredentialStore, login_via_browser, prompt_client
+
+store = CredentialStore()
+tokens, email = login_via_browser(email="you@example.com", store=store)
+
+# prompt_client tries browser login when Playwright + display are available
+with prompt_client(store=store) as client:
+    ...
+```
+
+On headless servers (CI, no `DISPLAY`), browser login is skipped automatically.
+Set `HEVY_FORCE_BROWSER=1` to override, or `use_browser=False` for manual tokens.
+
 ### Credential cache
 
 Tokens can be cached by email and updated automatically after refresh:
@@ -53,7 +80,8 @@ with prompt_client(store=store) as client:
     ...
 ```
 
-On first run you are prompted for email and tokens; later runs reuse the cache.
+On first run, browser login is attempted when available; otherwise you enter tokens.
+Later runs reuse the cache.
 
 ## API surface
 

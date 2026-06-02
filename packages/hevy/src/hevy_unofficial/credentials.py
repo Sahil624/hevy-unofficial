@@ -149,20 +149,69 @@ def prompt_tokens() -> AuthTokens:
     )
 
 
+def _try_browser_login(
+    email: str,
+    store: CredentialStore,
+    *,
+    timeout_sec: float = 300.0,
+) -> AuthTokens | None:
+    """Return tokens from browser login, or None if browser auth is unavailable."""
+    from hevy_unofficial.browser_auth import (
+        capture_tokens_via_browser,
+        is_headless_environment,
+        playwright_available,
+    )
+    from hevy_unofficial.exceptions import HevyBrowserError
+
+    if is_headless_environment():
+        print(
+            "Skipping browser login (headless/CI environment). "
+            "Set HEVY_FORCE_BROWSER=1 to override."
+        )
+        return None
+    if not playwright_available():
+        print(
+            "Skipping browser login (Playwright not installed). "
+            "Install with: pip install hevy-unofficial  "
+            "or pip install hevy-unofficial[browser]"
+        )
+        return None
+
+    try:
+        print("Starting browser login…")
+        tokens = capture_tokens_via_browser(timeout_sec=timeout_sec)
+        store.save(email, tokens)
+        print(f"Saved credentials from browser for {normalize_email(email)} → {store.path}")
+        return tokens
+    except HevyBrowserError as exc:
+        print(f"Browser login failed: {exc}")
+        return None
+
+
 def prompt_client(
     *,
     email: str | None = None,
     store: CredentialStore | None = None,
     config: HevyConfig | None = None,
     force_prompt: bool = False,
+    use_browser: bool | None = None,
+    browser_timeout_sec: float = 300.0,
 ) -> HevyClient:
     """
     Build a :class:`HevyClient` using cached credentials when available.
 
     1. Ask for email (unless provided).
     2. If cache has tokens for that email and ``force_prompt`` is false, use them.
-    3. Otherwise prompt for access/refresh tokens and save to cache.
+    3. Otherwise obtain tokens: browser login when ``use_browser`` is true (default
+       when Playwright is installed and a display is available), else stdin prompt.
     4. On token refresh, the client updates the cache automatically.
+
+    Parameters
+    ----------
+    use_browser:
+        ``True`` — try browser login before stdin.
+        ``False`` — never use browser login.
+        ``None`` (default) — try browser when Playwright is available and not headless.
     """
     store = store or CredentialStore()
     if email is None:
@@ -170,15 +219,29 @@ def prompt_client(
     if not email:
         raise ValueError("Email is required")
 
-    cached = None if force_prompt else store.get(email)
+    key = normalize_email(email)
+    cached = None if force_prompt else store.get(key)
     if cached:
         print(f"Using cached credentials for {cached.email} (updated {cached.updated_at})")
         tokens = cached.tokens
     else:
-        print("No cached credentials found. Enter tokens from browser DevTools or /login.")
-        tokens = prompt_tokens()
-        store.save(email, tokens)
-        print(f"Saved credentials for {normalize_email(email)} → {store.path}")
+        tokens = None
+        if use_browser is not False:
+            tokens = _try_browser_login(
+                key,
+                store,
+                timeout_sec=browser_timeout_sec,
+            )
+        if tokens is None:
+            if use_browser is True:
+                raise ValueError(
+                    "Browser login was required but did not succeed. "
+                    "Install Playwright, run in a graphical session, or pass use_browser=False."
+                )
+            print("Enter tokens from browser DevTools or POST /login.")
+            tokens = prompt_tokens()
+            store.save(key, tokens)
+            print(f"Saved credentials for {key} → {store.path}")
 
     from hevy_unofficial.client import HevyClient
 
@@ -187,6 +250,6 @@ def prompt_client(
         refresh_token=tokens.refresh_token,
         user_id=tokens.user_id,
         config=config,
-        credential_email=email,
+        credential_email=key,
         credential_store=store,
     )

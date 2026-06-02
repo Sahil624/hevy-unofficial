@@ -32,3 +32,7 @@ class HevyAuthError(HevyAPIError):
 
 class HevyRateLimitError(HevyAPIError):
     """Rate limit exceeded (HTTP 429)."""
+
+
+class HevyBrowserError(HevyError):
+    """Browser-based login or auth cookie extraction failed."""

@@ -11,8 +11,9 @@ Unofficial [Hevy](https://hevy.com) API client for Python (`api.hevyapp.com`).
 
 ```bash
 pip install hevy-unofficial
-# or from source:
-pip install -e "packages/hevy[dev]"
+playwright install chromium
+# minimal (no browser login): pip install 'hevy-unofficial[core]'
+# from source: pip install -e "packages/hevy[dev]"
 ```
 
 ```python

@@ -6,6 +6,7 @@ API reference
 
    client
    credentials
+   browser
    exercise_catalog
    auth
    users
