@@ -159,8 +159,9 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-GitHub Actions builds the wheel/sdist and publishes to PyPI (requires a
-``PYPI_API_TOKEN`` repository secret or PyPI trusted publishing for this repo).
+The ``pypi.yml`` workflow runs tests, publishes to PyPI, then deploys docs to
+GitHub Pages (docs deploy only runs after PyPI succeeds). Configure PyPI trusted
+publishing for workflow ``pypi.yml`` or set ``PYPI_API_TOKEN``.
 
 Manual upload:
 

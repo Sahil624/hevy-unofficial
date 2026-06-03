@@ -20,42 +20,48 @@ Live reload
    pip install sphinx-autobuild
    make -C docs livehtml
 
-GitHub Pages
-------------
+Continuous integration
+----------------------
 
-On push to ``main``, after tests pass, the workflow ``.github/workflows/ci.yml``:
+On every push to ``main`` and on pull requests, ``.github/workflows/ci.yml``:
 
-1. Installs the package and Sphinx dependencies
-2. Sets ``DOCS_BASE_URL`` to ``https://<owner>.github.io/<repo>/``
-3. Builds HTML and uploads a single Pages artifact (``docs`` job)
-4. Deploys that artifact via `GitHub Pages <https://pages.github.com/>`_ (``pages`` job)
+1. Runs unit tests
+2. **Builds** Sphinx HTML (verification only — does not deploy)
+
+Release (PyPI + GitHub Pages)
+-----------------------------
+
+On push of a version tag (``v*``), ``.github/workflows/pypi.yml`` runs in order:
+
+1. **Tests** — same pytest suite as CI
+2. **PyPI** — tag must match ``version`` in ``packages/hevy/pyproject.toml``; uploads wheel/sdist
+3. **Docs** — builds Sphinx HTML (only after PyPI succeeds)
+4. **GitHub Pages** — deploys that build
+
+Example:
+
+.. code-block:: bash
+
+   # bump version in packages/hevy/pyproject.toml first
+   git tag v0.1.0
+   git push origin v0.1.0
 
 Enable Pages in the repository settings:
 
 * **Source**: GitHub Actions
 
-After the first successful deploy, docs are available at:
+After the first successful release deploy, docs are available at:
 
 ``https://<github-owner>.github.io/<repository-name>/``
 
 Replace ``hevy-unofficial`` placeholders in ``docs/conf.py`` ``source_repository``
 URLs if your fork uses a different remote.
 
-PyPI releases
--------------
-
-On push of a version tag (``v*``), ``.github/workflows/pypi.yml``:
-
-1. Checks the tag (without ``v``) matches ``version`` in ``packages/hevy/pyproject.toml``
-2. Builds sdist and wheel
-3. Publishes to PyPI
-
-Example:
-
-.. code-block:: bash
-
-   git tag v0.1.0
-   git push origin v0.1.0
+PyPI trusted publishing
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Configure `PyPI trusted publishing <https://docs.pypi.org/trusted-publishers/>`_
-for this repository and workflow, or add a ``PYPI_API_TOKEN`` secret.
+for workflow file **`pypi.yml`** (not ``pypi.yaml``), environment ``pypi``, and
+repository ``Sahil624/hevy-unofficial`` (adjust if forked).
+
+Or add repository secret ``PYPI_API_TOKEN`` for token-based upload.
